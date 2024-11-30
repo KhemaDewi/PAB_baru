@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_login/data/user_data.dart';
+import 'package:flutter_login/models/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,9 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _emailController,
                 decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Email'),
-
+                    border: OutlineInputBorder(), labelText: 'Email'),
               ),
               const SizedBox(height: 16),
               //textfield password
@@ -49,12 +50,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: const InputDecoration(
                     border: OutlineInputBorder(), labelText: 'Password'),
                 obscureText: true,
-              )
+              ),
               //todo: 3.tombol login
+              const SizedBox(height: 16),
+              ElevatedButton(
+                  onPressed: () async {
+                    String email = _emailController.text;
+                    String password = _passwordController.text;
+
+                    if (validateLogin(email, password)) {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await prefs.setBool('isloggedIn', true);
+                      await prefs.setString('email', email);
+                      Navigator.pushReplacementNamed(context, '/home');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Invalid Email and Password')));
+                    }
+                  },
+                  child: const Text('Login'))
             ],
           ),
         ),
       ),
     );
+  }
+
+  bool validateLogin(String email, String password) {
+    for (User user in userList) {
+      if (user.email == email && user.password == password) {
+        return true;
+      }
+    }
+    return false;
   }
 }
